@@ -1,0 +1,50 @@
+#!/bin/bash
+# tary, 2018-10-17 20:46
+
+RTC_DEV=${1:-/dev/rtc2}
+#CONST_DATE=${2:-2018-10-01}
+DIFF_SECS=${3:-3}
+
+# echo RTC_DEV=@${RTC_DEV}@
+#rtc_date=$(hwclock -r -f $RTC_DEV)
+echo $rtc_date
+
+function test_rtc() {
+	local begs ends difs
+	local i now
+	
+	echo -ne "RTC Test"
+	hwclock --set --date="09/17/2003 13:26:00" -f $RTC_DEV
+	# RTC date start with CONST_DATE
+	#if ! [[ $rtc_date =~ ^$CONST_DATE ]]; then
+	#	return 1
+	#fi
+
+	# hardware time
+	now=`hwclock -r -f $RTC_DEV`; # echo $now;
+	begs=$(date -d "$now" +%s)
+	echo -n "."
+	for (( i = 0; i < $DIFF_SECS; i++ )); do
+		sleep 1
+		echo -n "."
+	done
+
+	# hardware time
+	now=`hwclock -r -f $RTC_DEV`; # echo $now;
+	ends=$(date -d "$now" +%s)
+
+	difs=$(expr "${ends}" - "${begs}")
+	if [ "${difs}" -lt "$DIFF_SECS" -o "${difs}" -gt "$(( DIFF_SECS + 2))" ]; then
+		echo -e "\rRTC Test: ERROR"
+		return 2;
+	fi
+
+	echo -e "\rRTC Test: OK"
+	return 0
+}
+
+
+test_rtc;r=$?
+
+exit $r
+
