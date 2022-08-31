@@ -1,0 +1,6 @@
+#/bin/bash
+
+rm -rf uyvy*
+./v4l2_test -d /dev/video0
+
+chown debian:debian uyvy*
